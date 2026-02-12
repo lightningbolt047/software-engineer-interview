@@ -66,13 +66,13 @@ export function FundingModal({ accountId, onClose, onSuccess }: FundingModalProp
             <label className="block text-sm font-medium text-gray-700">Amount</label>
             <div className="mt-1 relative rounded-md shadow-sm">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="text-gray-500 sm:text-sm">$</span>
+                <span className="sm:text-sm">$</span>
               </div>
               <input
                 {...register("amount", {
                   required: "Amount is required",
                   pattern: {
-                    value: /^\d+\.?\d{0,2}$/,
+                    value: /^(?:0|[1-9]\d*)(?:\.\d{0,2})?$/,
                     message: "Invalid amount format",
                   },
                   min: {
