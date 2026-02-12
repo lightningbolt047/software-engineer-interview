@@ -83,7 +83,7 @@ export default function SignupPage() {
                   {...register("email", {
                     required: "Email is required",
                     pattern: {
-                      value: /^\S+@\S+$/i,
+                      value: /^\S+@\S+\.(com|org|net|io)$/i,
                       message: "Invalid email address",
                     },
                   })}
