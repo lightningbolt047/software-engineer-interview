@@ -7,11 +7,8 @@ const dbPath = "bank.db";
 const sqlite = new Database(dbPath);
 export const db = drizzle(sqlite, { schema });
 
-const connections: Database.Database[] = [];
-
 export function initDb() {
   const conn = new Database(dbPath);
-  connections.push(conn);
 
   // Create tables if they don't exist
   sqlite.exec(`
@@ -57,9 +54,11 @@ export function initDb() {
       user_id INTEGER NOT NULL REFERENCES users(id),
       token TEXT UNIQUE NOT NULL,
       expires_at TEXT NOT NULL,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      last_used_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
   `);
+  conn.close();
 }
 
 // Initialize database on import

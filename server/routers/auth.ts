@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { users, sessions } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import {VALID_US_STATES} from "@/utils/validation_const";
-import {decryptString, encryptString} from "@/utils/crypt_utils";
+import {encryptString} from "@/utils/crypt_utils";
 import {SSN_KEY} from "@/utils/keys";
 
 export const authRouter = router({
