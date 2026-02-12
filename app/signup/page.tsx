@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { trpc } from "@/lib/trpc/client";
 import Link from "next/link";
+import {VALID_US_STATES} from "@/const/validation_const";
 
 type SignupFormData = {
   email: string;
@@ -83,7 +84,7 @@ export default function SignupPage() {
                   {...register("email", {
                     required: "Email is required",
                     pattern: {
-                      value: /^\S+@\S+$/i,
+                      value: /^\S+@\S+\.(com|org|net|io)$/i,
                       message: "Invalid email address",
                     },
                   })}
@@ -110,6 +111,8 @@ export default function SignupPage() {
                         return !commonPasswords.includes(value.toLowerCase()) || "Password is too common";
                       },
                       hasNumber: (value) => /\d/.test(value) || "Password must contain a number",
+                        hasUpperCase: (value) => /[A-Z]/.test(value) || "Password must contain an uppercase letter",
+                        hasSymbol: (value) => /[!@#$%^&*(),]/.test(value) || "Password must contain a symbol (!@#$%^&*(),)",
                     },
                   })}
                   type="password"
@@ -173,8 +176,8 @@ export default function SignupPage() {
                   {...register("phoneNumber", {
                     required: "Phone number is required",
                     pattern: {
-                      value: /^\d{10}$/,
-                      message: "Phone number must be 10 digits",
+                      value: /^\+?\d{10,15}$/,
+                      message: "Phone number must be 10-15 digits",
                     },
                   })}
                   type="tel"
@@ -189,7 +192,17 @@ export default function SignupPage() {
                   Date of Birth
                 </label>
                 <input
-                  {...register("dateOfBirth", { required: "Date of birth is required" })}
+                  {...register("dateOfBirth", {
+                      required: "Date of birth is required",
+                      validate: {
+                          beforeToday: (value) => {
+                              const today = new Date();
+                              today.setHours(0,0,0,0);
+                              const dob = new Date(value);
+                              return dob < today || "Date of birth must be in the past";
+                          },
+                      },
+                  })}
                   type="date"
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 />
@@ -251,10 +264,11 @@ export default function SignupPage() {
                   <input
                     {...register("state", {
                       required: "State is required",
-                      pattern: {
-                        value: /^[A-Z]{2}$/,
-                        message: "Use 2-letter state code",
-                      },
+                      validate : {
+                          validState: (value) => {
+                              return VALID_US_STATES.includes(value.toUpperCase()) || "Use a valid 2-letter US state code";
+                          }
+                      }
                     })}
                     type="text"
                     placeholder="CA"

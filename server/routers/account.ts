@@ -77,12 +77,20 @@ export const accountRouter = router({
     .input(
       z.object({
         accountId: z.number(),
-        amount: z.number().positive(),
+        amount: z.number().positive().max(10000),
         fundingSource: z.object({
           type: z.enum(["card", "bank"]),
           accountNumber: z.string(),
           routingNumber: z.string().optional(),
         }),
+      }).refine((data) => {
+        if (data.fundingSource.type === "bank") {
+            const bankAccountNumberRegex = /^\d+$/;
+            return !!data.fundingSource.routingNumber && bankAccountNumberRegex.test(data.fundingSource.accountNumber);
+        } else {
+            const cardAccountNumberRegex = /^[45]\d{15}$/;
+            return cardAccountNumberRegex.test(data.fundingSource.accountNumber)
+        }
       })
     )
     .mutation(async ({ input, ctx }) => {

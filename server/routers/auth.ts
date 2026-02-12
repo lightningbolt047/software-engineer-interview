@@ -6,13 +6,15 @@ import { publicProcedure, router } from "../trpc";
 import { db } from "@/lib/db";
 import { users, sessions } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import {VALID_US_STATES} from "@/const/validation_const";
 
 export const authRouter = router({
   signup: publicProcedure
     .input(
       z.object({
-        email: z.string().email().toLowerCase(),
-        password: z.string().min(8),
+        email: z.string().email(),
+          // Could have merged the regex but keeping them separate in case we want to add specific error messages in the future
+        password: z.string().min(8).regex(/\d/).regex(/[A-Z]/).regex(/[!@#$%^&*(),]/),
         firstName: z.string().min(1),
         lastName: z.string().min(1),
         phoneNumber: z.string().regex(/^\+?\d{10,15}$/),
@@ -20,7 +22,7 @@ export const authRouter = router({
         ssn: z.string().regex(/^\d{9}$/),
         address: z.string().min(1),
         city: z.string().min(1),
-        state: z.string().length(2).toUpperCase(),
+        state: z.string().length(2).toUpperCase().refine((s) => VALID_US_STATES.includes(s)),
         zipCode: z.string().regex(/^\d{5}$/),
       })
     )
