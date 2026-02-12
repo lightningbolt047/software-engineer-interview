@@ -111,6 +111,8 @@ export default function SignupPage() {
                         return !commonPasswords.includes(value.toLowerCase()) || "Password is too common";
                       },
                       hasNumber: (value) => /\d/.test(value) || "Password must contain a number",
+                        hasUpperCase: (value) => /[A-Z]/.test(value) || "Password must contain an uppercase letter",
+                        hasSymbol: (value) => /[!@#$%^&*(),]/.test(value) || "Password must contain a symbol (!@#$%^&*(),)",
                     },
                   })}
                   type="password"

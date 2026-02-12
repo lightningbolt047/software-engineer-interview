@@ -13,7 +13,8 @@ export const authRouter = router({
     .input(
       z.object({
         email: z.string().email(),
-        password: z.string().min(8),
+          // Could have merged the regex but keeping them separate in case we want to add specific error messages in the future
+        password: z.string().min(8).regex(/\d/).regex(/[A-Z]/).regex(/[!@#$%^&*(),]/),
         firstName: z.string().min(1),
         lastName: z.string().min(1),
         phoneNumber: z.string().regex(/^\+?\d{10,15}$/),
