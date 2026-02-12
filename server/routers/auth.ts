@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { users, sessions } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import {VALID_US_STATES} from "@/utils/validation_const";
-import {decryptString, encryptString} from "@/utils/crypt_utils";
+import {encryptString} from "@/utils/crypt_utils";
 import {SSN_KEY} from "@/utils/keys";
 
 export const authRouter = router({
@@ -140,7 +140,7 @@ export const authRouter = router({
       // Delete session from database
       let token: string | undefined;
       if ("cookies" in ctx.req) {
-        token = (ctx.req as any).cookies.session;
+        token = (ctx.req as any).cookies.get('session').value;
       } else {
         const cookieHeader = ctx.req.headers.get?.("cookie") || (ctx.req.headers as any).cookie;
         token = cookieHeader

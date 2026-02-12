@@ -49,3 +49,5 @@ export const VALID_US_STATES = [
   "WV",
   "WI",
 ];
+
+export const INACTIVITY_THRESHOLD_MINUTES = 30;

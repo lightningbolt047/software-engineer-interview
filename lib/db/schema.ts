@@ -50,4 +50,5 @@ export const sessions = sqliteTable("sessions", {
   token: text("token").unique().notNull(),
   expiresAt: text("expires_at").notNull(),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+  lastUsedAt: text("last_used_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });

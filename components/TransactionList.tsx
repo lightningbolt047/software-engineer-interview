@@ -1,13 +1,23 @@
 "use client";
 
-import { trpc } from "@/lib/trpc/client";
+type Transaction = {
+    id: number;
+    createdAt: string | null;
+    status: string;
+    accountId: number;
+    type: string;
+    amount: number;
+    description: string | null;
+    processedAt: string | null;
+    accountType?: string | undefined;
+};
 
 interface TransactionListProps {
-  accountId: number;
+  transactions: Transaction[];
+  isLoading: boolean;
 }
 
-export function TransactionList({ accountId }: TransactionListProps) {
-  const { data: transactions, isLoading } = trpc.account.getTransactions.useQuery({ accountId });
+export function TransactionList({ transactions, isLoading }: TransactionListProps) {
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {

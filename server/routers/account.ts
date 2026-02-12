@@ -3,7 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { protectedProcedure, router } from "../trpc";
 import { db } from "@/lib/db";
 import { accounts, transactions } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import {eq, and, desc} from "drizzle-orm";
 import * as crypto from "node:crypto";
 import checkCreditCardValid, {getAccountNumberChecksum} from "@/utils/account_number_luhn";
 
@@ -63,7 +63,7 @@ export const accountRouter = router({
           userId: ctx.user.id,
           accountNumber: accountNumber!,
           accountType: input.accountType,
-          balance: 100,
+          balance: 0,
           status: "pending",
           createdAt: new Date().toISOString(),
         }
@@ -141,14 +141,9 @@ export const accountRouter = router({
         })
         .where(eq(accounts.id, input.accountId));
 
-      let finalBalance = account.balance;
-      for (let i = 0; i < 100; i++) {
-        finalBalance = finalBalance + amount / 100;
-      }
-
       return {
         transaction,
-        newBalance: finalBalance, // This will be slightly off due to float precision
+        newBalance: account.balance + amount,
       };
     }),
 
@@ -176,7 +171,8 @@ export const accountRouter = router({
       const accountTransactions = await db
         .select()
         .from(transactions)
-        .where(eq(transactions.accountId, input.accountId));
+        .where(eq(transactions.accountId, input.accountId))
+        .orderBy(desc(transactions.createdAt));
 
       const enrichedTransactions = [];
       for (const transaction of accountTransactions) {

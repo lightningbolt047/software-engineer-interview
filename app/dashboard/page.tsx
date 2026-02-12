@@ -14,6 +14,10 @@ export default function DashboardPage() {
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
 
   const { data: accounts, refetch: refetchAccounts } = trpc.account.getAccounts.useQuery();
+    const { data: transactions, isLoading, refetch: refetchTransactions } = trpc.account.getTransactions.useQuery({ accountId: selectedAccountId! }, {
+        enabled: !!selectedAccountId || selectedAccountId == 0,
+        placeholderData: []
+    });
   const logoutMutation = trpc.auth.logout.useMutation();
 
   const handleLogout = async () => {
@@ -107,7 +111,7 @@ export default function DashboardPage() {
           {selectedAccountId && (
             <div className="mt-8">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Transaction History</h3>
-              <TransactionList accountId={selectedAccountId} />
+              <TransactionList transactions={transactions || []} isLoading={isLoading} />
             </div>
           )}
         </div>
@@ -119,6 +123,9 @@ export default function DashboardPage() {
           onSuccess={() => {
             setIsCreatingAccount(false);
             refetchAccounts();
+              if (!!selectedAccountId || selectedAccountId === 0) {
+                  refetchTransactions();
+              }
           }}
         />
       )}
@@ -130,6 +137,9 @@ export default function DashboardPage() {
           onSuccess={() => {
             setFundingAccountId(null);
             refetchAccounts();
+              if (!!selectedAccountId || selectedAccountId === 0) {
+                  refetchTransactions();
+              }
           }}
         />
       )}

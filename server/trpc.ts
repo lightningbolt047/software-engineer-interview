@@ -4,7 +4,8 @@ import { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import jwt from "jsonwebtoken";
 import { db } from "@/lib/db";
 import { sessions, users } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import {eq} from "drizzle-orm";
+import {INACTIVITY_THRESHOLD_MINUTES} from "@/utils/validation_const";
 
 export async function createContext(opts: CreateNextContextOptions | FetchCreateContextFnOptions) {
   // Handle different adapter types
@@ -54,12 +55,17 @@ export async function createContext(opts: CreateNextContextOptions | FetchCreate
 
       const session = await db.select().from(sessions).where(eq(sessions.token, token)).get();
 
-      if (session && new Date(session.expiresAt) > new Date()) {
+      const now = new Date();
+      if (session && new Date(session.expiresAt) > now) {
+        const lastUsedAt = new Date(session.lastUsedAt);
         user = await db.select().from(users).where(eq(users.id, decoded.userId)).get();
-        const expiresIn = new Date(session.expiresAt).getTime() - new Date().getTime();
-        if (expiresIn < 60000) {
-          console.warn("Session about to expire");
+        const expiresIn = new Date(session.expiresAt).getTime() - now.getTime();
+        const sessionExpiredDueToInactivity = now.getTime() - lastUsedAt.getTime() > INACTIVITY_THRESHOLD_MINUTES * 60 * 1000;
+        if (expiresIn < 60000 || sessionExpiredDueToInactivity) {
+            await db.delete(sessions).where(eq(sessions.token, token));
+            throw new TRPCError({ code: "UNAUTHORIZED", message: "Session expired" });
         }
+        await db.update(sessions).set({ lastUsedAt: new Date().toISOString() }).where(eq(sessions.id, session.id));
       }
     } catch (error) {
       // Invalid token
