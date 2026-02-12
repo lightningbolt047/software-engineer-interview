@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { trpc } from "@/lib/trpc/client";
 import Link from "next/link";
-import {VALID_US_STATES} from "@/const/validation_const";
+import {VALID_US_STATES} from "@/utils/validation_const";
 
 type SignupFormData = {
   email: string;

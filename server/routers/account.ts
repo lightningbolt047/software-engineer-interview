@@ -4,6 +4,7 @@ import { protectedProcedure, router } from "../trpc";
 import { db } from "@/lib/db";
 import { accounts, transactions } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
+import checkCreditCardValid from "@/utils/credit_card_luhn_check";
 
 function generateAccountNumber(): string {
   return Math.floor(Math.random() * 1000000000)
@@ -88,8 +89,8 @@ export const accountRouter = router({
             const bankAccountNumberRegex = /^\d+$/;
             return !!data.fundingSource.routingNumber && bankAccountNumberRegex.test(data.fundingSource.accountNumber);
         } else {
-            const cardAccountNumberRegex = /^[45]\d{15}$/;
-            return cardAccountNumberRegex.test(data.fundingSource.accountNumber)
+            const cardAccountNumberRegex = /^\d{16}$/;
+            return cardAccountNumberRegex.test(data.fundingSource.accountNumber) && checkCreditCardValid(data.fundingSource.accountNumber);
         }
       })
     )

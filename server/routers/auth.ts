@@ -6,7 +6,7 @@ import { publicProcedure, router } from "../trpc";
 import { db } from "@/lib/db";
 import { users, sessions } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import {VALID_US_STATES} from "@/const/validation_const";
+import {VALID_US_STATES} from "@/utils/validation_const";
 
 export const authRouter = router({
   signup: publicProcedure
