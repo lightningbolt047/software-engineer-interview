@@ -4,12 +4,14 @@ import { protectedProcedure, router } from "../trpc";
 import { db } from "@/lib/db";
 import { accounts, transactions } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
-import checkCreditCardValid from "@/utils/credit_card_luhn_check";
+import * as crypto from "node:crypto";
+import checkCreditCardValid, {getAccountNumberChecksum} from "@/utils/account_number_luhn";
 
 function generateAccountNumber(): string {
-  return Math.floor(Math.random() * 1000000000)
-    .toString()
-    .padStart(10, "0");
+    const digits = Array.from(crypto.getRandomValues(new Uint32Array(9))).map(digit => digit % 10);
+    const luhnChecksum = getAccountNumberChecksum(digits.join(""));
+    digits.push(luhnChecksum);
+    return digits.join("");
 }
 
 export const accountRouter = router({

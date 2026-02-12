@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { trpc } from "@/lib/trpc/client";
-import checkCreditCardValid from "@/utils/credit_card_luhn_check";
+import checkCreditCardValid from "@/utils/account_number_luhn";
 
 interface FundingModalProps {
   accountId: number;
