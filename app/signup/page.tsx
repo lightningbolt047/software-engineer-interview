@@ -189,7 +189,17 @@ export default function SignupPage() {
                   Date of Birth
                 </label>
                 <input
-                  {...register("dateOfBirth", { required: "Date of birth is required" })}
+                  {...register("dateOfBirth", {
+                      required: "Date of birth is required",
+                      validate: {
+                          beforeToday: (value) => {
+                              const today = new Date();
+                              today.setHours(0,0,0,0);
+                              const dob = new Date(value);
+                              return dob < today || "Date of birth must be in the past";
+                          },
+                      },
+                  })}
                   type="date"
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 />
