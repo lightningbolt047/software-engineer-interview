@@ -6,6 +6,7 @@ import { publicProcedure, router } from "../trpc";
 import { db } from "@/lib/db";
 import { users, sessions } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import {VALID_US_STATES} from "@/const/validation_const";
 
 export const authRouter = router({
   signup: publicProcedure
@@ -20,7 +21,7 @@ export const authRouter = router({
         ssn: z.string().regex(/^\d{9}$/),
         address: z.string().min(1),
         city: z.string().min(1),
-        state: z.string().length(2).toUpperCase(),
+        state: z.string().length(2).toUpperCase().refine((s) => VALID_US_STATES.includes(s)),
         zipCode: z.string().regex(/^\d{5}$/),
       })
     )
