@@ -83,6 +83,11 @@ export const accountRouter = router({
           accountNumber: z.string(),
           routingNumber: z.string().optional(),
         }),
+      }).refine((data) => {
+        if (data.fundingSource.type === "bank") {
+            return !!data.fundingSource.routingNumber;
+        }
+        return true;
       })
     )
     .mutation(async ({ input, ctx }) => {
