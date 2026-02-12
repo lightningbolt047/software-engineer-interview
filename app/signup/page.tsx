@@ -174,8 +174,8 @@ export default function SignupPage() {
                   {...register("phoneNumber", {
                     required: "Phone number is required",
                     pattern: {
-                      value: /^\d{10}$/,
-                      message: "Phone number must be 10 digits",
+                      value: /^\+?\d{10,15}$/,
+                      message: "Phone number must be 10-15 digits",
                     },
                   })}
                   type="tel"
