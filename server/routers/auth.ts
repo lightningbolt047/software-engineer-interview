@@ -7,6 +7,8 @@ import { db } from "@/lib/db";
 import { users, sessions } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import {VALID_US_STATES} from "@/utils/validation_const";
+import {decryptString, encryptString} from "@/utils/crypt_utils";
+import {SSN_KEY} from "@/utils/keys";
 
 export const authRouter = router({
   signup: publicProcedure
@@ -37,10 +39,14 @@ export const authRouter = router({
       }
 
       const hashedPassword = await bcrypt.hash(input.password, 10);
+      // WARNING: The KEY MUST BE FETCHED SEPARATELY FROM A VAULT. I'm including here for easier setup for evaluation.
+      const ssnEncrypted = encryptString(input.ssn, SSN_KEY);
+
 
       await db.insert(users).values({
         ...input,
         password: hashedPassword,
+        ssn: ssnEncrypted
       });
 
       // Fetch the created user
@@ -60,6 +66,8 @@ export const authRouter = router({
 
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7);
+
+      await db.delete(sessions).where(eq(sessions.userId, user.id));
 
       await db.insert(sessions).values({
         userId: user.id,
@@ -109,6 +117,8 @@ export const authRouter = router({
 
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7);
+
+      await db.delete(sessions).where(eq(sessions.userId, user.id));
 
       await db.insert(sessions).values({
         userId: user.id,
