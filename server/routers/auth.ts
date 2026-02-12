@@ -140,7 +140,7 @@ export const authRouter = router({
       // Delete session from database
       let token: string | undefined;
       if ("cookies" in ctx.req) {
-        token = (ctx.req as any).cookies.session;
+        token = (ctx.req as any).cookies.get('session').value;
       } else {
         const cookieHeader = ctx.req.headers.get?.("cookie") || (ctx.req.headers as any).cookie;
         token = cookieHeader
