@@ -57,16 +57,15 @@ export const accountRouter = router({
       // Fetch the created account
       const account = await db.select().from(accounts).where(eq(accounts.accountNumber, accountNumber!)).get();
 
+      if (!account) {
+        throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to create account",
+        });
+      }
+
       return (
-        account || {
-          id: 0,
-          userId: ctx.user.id,
-          accountNumber: accountNumber!,
-          accountType: input.accountType,
-          balance: 0,
-          status: "pending",
-          createdAt: new Date().toISOString(),
-        }
+        account
       );
     }),
 
