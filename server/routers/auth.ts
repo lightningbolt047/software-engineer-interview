@@ -5,7 +5,7 @@ import { TRPCError } from "@trpc/server";
 import { publicProcedure, router } from "../trpc";
 import { db } from "@/lib/db";
 import { users, sessions } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import {eq, sql} from "drizzle-orm";
 import {VALID_US_STATES} from "@/utils/validation_const";
 import {encryptString} from "@/utils/crypt_utils";
 import {SSN_KEY} from "@/utils/keys";
@@ -29,7 +29,7 @@ export const authRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const existingUser = await db.select().from(users).where(eq(users.email, input.email)).get();
+      const existingUser = await db.select().from(users).where(sql`LOWER(${users.email}) = LOWER(${input.email})`).get();
 
       if (existingUser) {
         throw new TRPCError({
