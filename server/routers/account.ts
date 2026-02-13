@@ -57,16 +57,15 @@ export const accountRouter = router({
       // Fetch the created account
       const account = await db.select().from(accounts).where(eq(accounts.accountNumber, accountNumber!)).get();
 
+      if (!account) {
+        throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to create account",
+        });
+      }
+
       return (
-        account || {
-          id: 0,
-          userId: ctx.user.id,
-          accountNumber: accountNumber!,
-          accountType: input.accountType,
-          balance: 0,
-          status: "pending",
-          createdAt: new Date().toISOString(),
-        }
+        account
       );
     }),
 
@@ -99,52 +98,57 @@ export const accountRouter = router({
     .mutation(async ({ input, ctx }) => {
       const amount = parseFloat(input.amount.toString());
 
-      // Verify account belongs to user
-      const account = await db
-        .select()
-        .from(accounts)
-        .where(and(eq(accounts.id, input.accountId), eq(accounts.userId, ctx.user.id)))
-        .get();
+        // Verify account belongs to user
+        const account = await db
+            .select()
+            .from(accounts)
+            .where(and(eq(accounts.id, input.accountId), eq(accounts.userId, ctx.user.id)))
+            .get();
 
-      if (!account) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Account not found",
+        if (!account) {
+            throw new TRPCError({
+                code: "NOT_FOUND",
+                message: "Account not found",
+            });
+        }
+
+        if (account.status !== "active") {
+            throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: "Account is not active",
+            });
+        }
+
+        return db.transaction((tx) => {
+            // Create transaction entry
+            tx.insert(transactions).values({
+                accountId: input.accountId,
+                type: "deposit",
+                amount,
+                description: `Funding from ${input.fundingSource.type}`,
+                status: "completed",
+                processedAt: new Date().toISOString(),
+            }).run();
+
+            // Update account balance
+            tx
+                .update(accounts)
+                .set({
+                    balance: account.balance + amount,
+                })
+                .where(eq(accounts.id, input.accountId)).run();
+
+            // Fetch the created transaction and latest amount
+            const transaction = tx.select().from(transactions).orderBy(desc(transactions.createdAt)).limit(1).get();
+            const balance = tx.select({balance: accounts.balance}).from(accounts).where(eq(accounts.id, input.accountId)).get();
+
+            return {
+                transaction,
+                newBalance: balance,
+            };
+        }, {
+            behavior: 'immediate'
         });
-      }
-
-      if (account.status !== "active") {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Account is not active",
-        });
-      }
-
-      // Create transaction
-      await db.insert(transactions).values({
-        accountId: input.accountId,
-        type: "deposit",
-        amount,
-        description: `Funding from ${input.fundingSource.type}`,
-        status: "completed",
-        processedAt: new Date().toISOString(),
-      });
-
-      // Fetch the created transaction
-      const transaction = await db.select().from(transactions).orderBy(transactions.createdAt).limit(1).get();
-
-      // Update account balance
-      await db
-        .update(accounts)
-        .set({
-          balance: account.balance + amount,
-        })
-        .where(eq(accounts.id, input.accountId));
-
-      return {
-        transaction,
-        newBalance: account.balance + amount,
-      };
     }),
 
   getTransactions: protectedProcedure
