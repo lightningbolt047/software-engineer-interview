@@ -49,7 +49,7 @@ export function getMockUser(randomNumber: number) {
     zipCode: "10001",
     firstName: "Shreyas",
     lastName: "V",
-    dateOfBirth: "01/01/2026",
+    dateOfBirth: "2026-01-01",
     id: "1",
     createdAt: "",
   };

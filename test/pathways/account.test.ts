@@ -51,9 +51,28 @@ describe("User Bank Account Tests /account", async () => {
     assert.equal(response.newBalance?.balance, account.balance + depositAmount);
   });
 
-  it("Create Account and add transaction Invalid card number", async () => {
+  it("Create the same account type multiple times", async () => {
     // Arrange
     const user = await prepareUserForTest(2);
+    const ctx = getUserAuthContext(user);
+    const mockAccount = getMockAccount();
+    const accountRouter = accountRouterFactory(memDb);
+    let hasError = false;
+    // Act
+    await accountRouter.createCaller(ctx).createAccount(mockAccount);
+    try {
+      await accountRouter.createCaller(ctx).createAccount(mockAccount);
+    } catch {
+      hasError = true;
+    }
+
+    // Assert
+    assert.equal(hasError, true);
+  });
+
+  it("Create Account and add transaction Invalid card number", async () => {
+    // Arrange
+    const user = await prepareUserForTest(3);
     const ctx = getUserAuthContext(user);
     const accountRouter = accountRouterFactory(memDb);
     const account = await prepareAccountForTest(user.id, "1234567891");
@@ -79,7 +98,7 @@ describe("User Bank Account Tests /account", async () => {
 
   it("Create Account and add transaction valid card input", async () => {
     // Arrange
-    const user = await prepareUserForTest(3);
+    const user = await prepareUserForTest(4);
     const ctx = getUserAuthContext(user);
     const accountRouter = accountRouterFactory(memDb);
     const account = await prepareAccountForTest(user.id, "1234567892");

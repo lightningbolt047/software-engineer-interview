@@ -1,14 +1,14 @@
 # Explanation file
 
 # Hello! This file contains the explanation for the code changes.
-Order goes from Critical issues to minor issues but in the order (SEC, VAL, UI)
+Priority goes from Critical issues to minor issues but in the order SEC, PERF, VAL, UI within each category.
 ### Critical issues:
 #### SEC-301: SSN Storage:
 My solution was to encrypt the SSN string. If we're not using for anything else, or just using it to verify the uniqueness of the user, then we could have hashed it, since this is a bank, we may have to retrieve it for various reasons (legal compliance, credit score check etc.).
 
 <img src="explanation_screenshots/SEC-301.png" width="50%" height="auto">
 
-While we aren't using the SSN for anything else, we may want to use it in the future, so I added a decryption method which we could call.
+While we aren't using the SSN for anything else, we may want to use it in the future, so I added a decryption method which we're calling in test methods to verify if the encrypted string can be decrypted again.
 
 #### SEC-303: XSS Vulnerability:
 React escapes HTML by default, so we just need to make sure we're not using dangerouslySetInnerHTML or something similar. So, I removed it.
@@ -83,7 +83,10 @@ One of the fixes that I had mentioned in PERF-406 would fix this as well.
 
 #### VAL-201: Email Validation Problems:
 Changed the regex to check for domain suffixes. Added a few, but we could add more as needed.
+
 <img src="explanation_screenshots/VAL-201.png"  width="50%" height="auto">
+
+<img src="explanation_screenshots/VAL-201-0-1.png" width="50%" height="auto">
 
 Fixed the auto lower case issue as well; fixed it in the zod schema.
 
@@ -161,3 +164,21 @@ Had to add a fixed text color (color was the same as the light mode text color) 
 <img src="explanation_screenshots/UI-101-1.png" width="50%" height="auto">
 
 <img src="explanation_screenshots/UI-101-2.png" width="50%" height="auto">
+
+## Tests:
+I added tests to verify some of the validations and especially I wanted to find out if I can decrypt the SSN back to string (Would be funny if I can't😂)
+
+### Added tests for user account creation (including fields validation) and login:
+<img src="explanation_screenshots/TEST-0.png" width="50%" height="auto">
+
+### Added tests for creating and funding an account (including failures):
+
+<img src="explanation_screenshots/TEST-1.png" width="50%" height="auto">
+
+### Added tests for SSN encryption and decryption:
+
+<img src="explanation_screenshots/TEST-2.png" width="50%" height="auto">
+
+#### Test results, latest commit:
+
+<img src="explanation_screenshots/TEST-3.png" width="50%" height="auto">
